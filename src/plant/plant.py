@@ -11,19 +11,19 @@ class Plant:
     def __init__(self, nplants, envsize):
         self.nplants = nplants
         self.envsize = envsize
-        self.x = [random.uniform(0, self.envsize) for i in range(self.nplants)]
-        self.y = [random.uniform(0, self.envsize) for i in range(self.nplants)]
-        self.size = [random.choice(self.potential_properties)['size']  for i in range(self.nplants)]
-        self.color = [random.choice(self.potential_properties)['color'] for i in range(self.nplants)]
-        self.reproduction_rate = [random.choice(self.potential_properties)['reproduction_rate']  for i in range(self.nplants)]
-        self.plant_population = pd.DataFrame({'x': self.x,
-                                              'y': self.y,
-                                              'size': self.size,
-                                              'color': self.color,
-                                              'reproduction_rate': self.reproduction_rate})
+        x = [random.uniform(0, self.envsize) for i in range(self.nplants)]
+        y = [random.uniform(0, self.envsize) for i in range(self.nplants)]
+        size = [random.choice(self.potential_properties)['size']  for i in range(self.nplants)]
+        color = [random.choice(self.potential_properties)['color'] for i in range(self.nplants)]
+        reproduction_rate = [random.choice(self.potential_properties)['reproduction_rate']  for i in range(self.nplants)]
+        self.plant_population = pd.DataFrame({'x': x,
+                                              'y': y,
+                                              'size': size,
+                                              'color': color,
+                                              'reproduction_rate': reproduction_rate})
 
         self._logger = logging.getLogger(__name__)
-        self._logger.debug(f"Initiating {self.name}, {self.x}, {self.y}, {self.size}, {self.color}")
+        self._logger.debug(f"Initiating {self.name}")
 
     def grow_plants(self):
         self.plant_population['random_chance'] = [random.uniform(0, 1) for i in range(len((self.plant_population.x)))]
@@ -34,7 +34,6 @@ class Plant:
         self.plant_population = pd.concat([self.plant_population, reproducing_plants]).reset_index(drop=True)
         self.plant_population.drop(columns=['reproduction_chance', 'random_chance'])
 
-
-    def die(self):
-        pass
+    def die(self, eaten_indexes):
+        self.plant_population = self.plant_population.loc[~self.plant_population.index.isin(eaten_indexes)]
 
