@@ -56,8 +56,8 @@ with open('src/simulation_parameters.json') as file:
     simulation_parameters = json.load(file)
 
 nplants = simulation_parameters['plants']
-nherbivores = simulation_parameters['carnivores']
-ncarnivores = simulation_parameters['herbivores']
+nherbivores = simulation_parameters['herbivores']
+ncarnivores = simulation_parameters['carnivores']
 envsize = simulation_parameters['size']
 steps = simulation_parameters['steps']
 

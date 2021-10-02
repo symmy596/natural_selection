@@ -1,7 +1,7 @@
 {
   "plants": 100,
   "carnivores": 10,
-  "herbivores": 50,
+  "herbivores": 10,
   "size": 1000,
   "steps": 500
 }
