@@ -1,7 +1,17 @@
 {
-  "plants": 100,
-  "carnivores": 10,
-  "herbivores": 10,
+  "plant properties": {
+    "starting number": 1000,
+    "replication method": "linear",
+    "replication percentage": 50
+  },
+  "carnivores properties": {
+    "starting number": 10
+  },
+  "herbivore properties": {
+    "starting number": 100,
+    "perception": 1,
+    "starting energy": 5
+  },
   "size": 1000,
   "steps": 500
 }

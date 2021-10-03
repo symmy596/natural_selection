@@ -37,44 +37,24 @@ logger.debug(
 )
 
 
-def main(nplants,
-         nherbivores,
-         ncarnivores,
-         envsize,
-         steps):
+def main(simulation_parameters):
 
-    simulation = Simulation(nplants=nplants,
-                            nherbivores=nherbivores,
-                            ncarnivores=ncarnivores,
-                            envsize=envsize,
-                            steps=steps
-                            )
+    simulation = Simulation(simulation_parameters)
     simulation.run()
 
 
 with open('src/simulation_parameters.json') as file:
     simulation_parameters = json.load(file)
 
-nplants = simulation_parameters['plants']
-nherbivores = simulation_parameters['herbivores']
-ncarnivores = simulation_parameters['carnivores']
-envsize = simulation_parameters['size']
-steps = simulation_parameters['steps']
-
 logger.info(
     f"""Received input variables:
-            Plants: {nplants}
-            Herbivores: {nherbivores}
-            Carnivores: {ncarnivores}
-            Size: {envsize}
-            Steps: {steps}
+            Starting plants: {simulation_parameters['plant properties']['starting number']}
+            Plant replication rate: {simulation_parameters['plant properties']['replication percentage']}
+            Starting herbivores: {simulation_parameters['herbivore properties']['starting number']}
+            Starting carnivores: {simulation_parameters['carnivores properties']['starting number']}
+            Size: {simulation_parameters['size']}
+            Steps: {simulation_parameters['steps']}
         """
 )
 
-main(
-    nplants=nplants,
-    nherbivores=nherbivores,
-    ncarnivores=ncarnivores,
-    envsize=envsize,
-    steps=steps,
-)
+main(simulation_parameters)
