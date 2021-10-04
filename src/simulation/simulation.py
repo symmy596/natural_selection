@@ -27,22 +27,19 @@ class Simulation:
 
     def __init__(self, simulation_parameters):
 
-        self._nplants = simulation_parameters['plant properties']['starting number']
-        self._plants_replication_rate = simulation_parameters['plant properties']['replication percentage']
-        self._plants_replication_method = simulation_parameters['plant properties']['replication method']
-        self._nherbivores = simulation_parameters['herbivore properties']['starting number']
-        self._ncarnivores = simulation_parameters['carnivores properties']['starting number']
+        self._plant_properties = simulation_parameters['plant_properties']
+        self._herbivores_properties = simulation_parameters['herbivore_properties']
+        self._ncarnivores = simulation_parameters['carnivores_properties']
         self._envsize = simulation_parameters['size']
         self._steps = simulation_parameters['steps']
         self._logger = logging.getLogger(__name__)
         self._logger.info(f"Initiating {self.name}")
 
     def setup_simulation(self):
-        self.plants = Plant(nplants=self._nplants,
-                            replication_rate=self._plants_replication_rate,
-                            replication_method=self._plants_replication_method,
+        self.plants = Plant(plant_properties=self._plant_properties,
                             envsize=self._envsize)
-        self.herbivores = Herbivore(nherbivores=self._nherbivores, envsize=self._envsize)
+        self.herbivores = Herbivore(herbivore_properties=self._herbivores_properties,
+                                    envsize=self._envsize)
 
     def herbivore_plant_interaction(self):
         nn_df = nearest_nieghbour(self.plants.plant_population, self.herbivores.herbivore_population)
@@ -54,7 +51,7 @@ class Simulation:
         self.historic_plant_reproduction_rate.append(np.mean(self.plants.plant_population.reproduction_rate))
         self.historic_plant_size.append(np.mean(self.plants.plant_population['size']))
         self.historic_herbivores.append(self.herbivores.herbivore_population.shape[0])
-        self.historic_herbivore_energy.append(np.mean(self.herbivores.herbivore_population.energy))
+        self.historic_herbivore_energy.append(np.mean(self.herbivores.herbivore_population['size']))
         self.historic_herbivores_speed.append(np.mean(self.herbivores.herbivore_population.speed))
         self.historic_herbivores_life_expectancy.append(np.mean(self.herbivores.herbivore_population.life_expectancy))
         self.historic_herbivores_reproduction_energy.append(np.mean(self.herbivores.herbivore_population.reproduction_energy))
@@ -121,18 +118,27 @@ class Simulation:
         fig, ax1, ax2, ax3, ax4 = self.setup_animation()
         self._logger.info("Starting simulation")
         for i in range(self._steps):
-            self.historic_steps.append(i)
+            if self.herbivores.herbivore_population.shape[0] == 0:
+                self._logger.info("Herbivores have stared to death")
+                break
+            elif self.plants.plant_population.shape[0] == 0:
+                self._logger.info("Plants have gone extinct. Ecological collapse incoming")
+                self.historic_steps.append(i)
+                self.herbivores.move()
+                self.herbivores.age()
+                self.sample()
+                fig, ax1, ax2, ax3, ax4 = self.update_animation(fig, ax1, ax2, ax3, ax4)
+            else:
+                self.historic_steps.append(i)
 
-            self.herbivore_plant_interaction()
+                self.herbivore_plant_interaction()
+                self.herbivores.move()
 
-            self.herbivores.move()
+                self.herbivores.age()
 
-            self.herbivores.age()
+                self.plants.grow_plants()
 
-            self.plants.grow_plants()
-            #self._logger.info(f"Plants {self.plants.plant_population}")
-            #self._logger.info(f"Hervivores {self.herbivores.herbivore_population}")
-            self.sample()
-            fig, ax1, ax2, ax3, ax4 = self.update_animation(fig, ax1, ax2, ax3, ax4)
+                self.sample()
+                fig, ax1, ax2, ax3, ax4 = self.update_animation(fig, ax1, ax2, ax3, ax4)
         plt.savefig("end_pane.png")
         time.sleep(10000)

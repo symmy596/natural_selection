@@ -48,10 +48,9 @@ with open('src/simulation_parameters.json') as file:
 
 logger.info(
     f"""Received input variables:
-            Starting plants: {simulation_parameters['plant properties']['starting number']}
-            Plant replication rate: {simulation_parameters['plant properties']['replication percentage']}
-            Starting herbivores: {simulation_parameters['herbivore properties']['starting number']}
-            Starting carnivores: {simulation_parameters['carnivores properties']['starting number']}
+            Starting plants: {simulation_parameters['plant_properties']['starting_number']}
+            Starting herbivores: {simulation_parameters['herbivore_properties']['starting_number']}
+            Starting carnivores: {simulation_parameters['carnivores_properties']['starting_number']}
             Size: {simulation_parameters['size']}
             Steps: {simulation_parameters['steps']}
         """
