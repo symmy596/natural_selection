@@ -7,6 +7,4 @@ class Carnivore:
     def __init__(self, environment):
         self._environment = environment
         self._logger = logging.getLogger(__name__)
-        super().__init__(type=self.type,
-                         logger=self._logger)
-
+        super().__init__(type=self.type, logger=self._logger)
