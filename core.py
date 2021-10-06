@@ -30,6 +30,7 @@ def setup_logging():
 
     return logger
 
+
 logger = setup_logging()
 logger.info(os.getenv("LOGLEVEL", "No LOGLEVEL set, using INFO"))
 logger.debug(
@@ -43,7 +44,7 @@ def main(simulation_parameters):
     simulation.run()
 
 
-with open('src/simulation_parameters.json') as file:
+with open("src/simulation_parameters.json") as file:
     simulation_parameters = json.load(file)
 
 logger.info(

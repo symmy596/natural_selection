@@ -44,11 +44,11 @@ class Simulation:
         )
 
     def herbivore_plant_interaction(self):
-        nn_df = nearest_nieghbour(
+        self.herbivores.herbivore_population = nearest_nieghbour(
             self.plants.plant_population, self.herbivores.herbivore_population
         )
-        self.herbivores.eat(nn_df)
-        self.plants.die(nn_df)
+        self.herbivores.eat()
+        self.plants.die(self.herbivores.herbivore_population)
 
     def sample(self):
         self.historic_plants.append(self.plants.plant_population.shape[0])

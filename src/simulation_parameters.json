@@ -1,6 +1,6 @@
 {
   "plant_properties": {
-    "starting_number": 1000,
+    "starting_number": 10,
     "replication_percentage": 50,
     "size": [1, 5],
     "reproduction_rate": [1, 5],
@@ -10,11 +10,11 @@
     "starting_number": 10
   },
   "herbivore_properties": {
-    "starting_number": 200,
-    "perception": 1,
+    "starting_number": 10,
     "starting_energy": 8,
     "mutation_rate": 0.1,
     "movesize": 2,
+    "perception": [80, 120],
     "size": [1, 5],
     "speed": [1, 5],
     "life_expectancy": [65, 75],

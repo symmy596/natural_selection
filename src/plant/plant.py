@@ -82,5 +82,5 @@ class Plant:
     def die(self, distances):
         eaten_plants = distances.loc[distances["dist"] < 10.0]
         self.plant_population = self.plant_population.loc[
-            ~self.plant_population.index.isin(eaten_plants.index)
+            ~self.plant_population.index.isin(eaten_plants['nearest_neighbour_index'])
         ]
