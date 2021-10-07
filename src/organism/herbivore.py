@@ -40,44 +40,56 @@ class Herbivore:
             self.herbivore_properties["starting_number"],
         )
         perception = np.random.uniform(
-            self.herbivore_properties['perception'][0],
-            self.herbivore_properties['perception'][1],
-            self.herbivore_properties['starting_number']
+            self.herbivore_properties["perception"][0],
+            self.herbivore_properties["perception"][1],
+            self.herbivore_properties["starting_number"],
         )
+        perception_radius = perception * 20
+        max_movesize = (
+            (np.power(speed, 3)) - (np.power(size, 2))
+        ) / self.herbivore_properties["movesize"]
         self.herbivore_population = pd.DataFrame(
             {
                 "x": x,
                 "y": y,
                 "speed": speed,
+                "perception": perception,
+                "size": size,
                 "life_expectancy": life_expectancy,
                 "reproduction_energy": reproduction_energy,
-                "perception": perception,
-                "movesize": self.herbivore_properties["movesize"],
-                "size": size,
                 "energy": self.herbivore_properties["starting_energy"],
                 "age": 0,
+                "perception_radius": perception_radius,
+                "max_movesize": max_movesize,
                 "nearest_plant_x": np.nan,
                 "nearest_plant_y": np.nan,
                 "nearest_neighbour_distance": np.nan,
                 "nearest_neighbour_index": np.nan,
                 "nearest_neighbour_size": np.nan,
                 "target": False,
-                "x_hunt_time": 0,
-                "y_hunt_time": 0,
             }
         )
-        self.movesizes = [-self.herbivore_properties['movesize'], self.herbivore_properties['movesize']]
+        self.movesizes = [
+            -self.herbivore_properties["movesize"],
+            self.herbivore_properties["movesize"],
+        ]
         self._logger = logging.getLogger(__name__)
         self._logger.debug(f"Initiating {self.name}")
 
     def random_move(self, aimless_herbivores):
-        self._logger.info(aimless_herbivores)
-        #TODO Clever relationship needed
-        aimless_herbivores["x"] = aimless_herbivores["x"] + (random.choice(self.movesizes)
-            * (aimless_herbivores["size"] * aimless_herbivores["speed"])
+        aimless_herbivores["x"] = aimless_herbivores["x"] + (
+            (
+                np.power(aimless_herbivores["speed"], 3)
+                - np.power(aimless_herbivores["speed"], 2)
+            )
+            / random.choice(self.movesizes)
         )
-        aimless_herbivores["y"] = aimless_herbivores["y"] + (random.choice(self.movesizes)
-            * (aimless_herbivores["size"] * aimless_herbivores["speed"])
+        aimless_herbivores["y"] = aimless_herbivores["y"] + (
+            (
+                np.power(aimless_herbivores["speed"], 3)
+                - np.power(aimless_herbivores["speed"], 2)
+            )
+            / random.choice(self.movesizes)
         )
         aimless_herbivores["x"][aimless_herbivores["x"] < 0] = 0 + 5
         aimless_herbivores["y"][aimless_herbivores["y"] < 0] = 0 + 5
@@ -90,14 +102,20 @@ class Herbivore:
         return aimless_herbivores
 
     def aimed_move(self, aimed_herbivores):
-        #TODO Clever relationship needed
-        aimed_herbivores["x"] = aimed_herbivores["x"] + (
-            ((aimed_herbivores["nearest_plant_x"] - aimed_herbivores["x"]) / 2)
-            * (aimed_herbivores["size"] * aimed_herbivores["speed"])
+        outside_range = aimed_herbivores.query("nearest_neighbour_distance > max_movesize")
+        inside_range = aimed_herbivores.query("nearest_neighbour_distance < max_movesize")
+        inside_range["x"] = inside_range["nearest_plant_x"].copy() + 2
+        inside_range["y"] = inside_range["nearest_plant_y"].copy() + 2
+        outside_range["x"] = outside_range["x"] + np.copysign(
+            outside_range["max_movesize"],
+            (outside_range["nearest_plant_x"] - outside_range["x"]),
         )
-        aimed_herbivores["y"] = aimed_herbivores["y"] + (
-            ((aimed_herbivores["nearest_plant_y"] - aimed_herbivores["y"]) / 2)
-            * (aimed_herbivores["size"] * aimed_herbivores["speed"])
+        outside_range["y"] = outside_range["y"] + np.copysign(
+            outside_range["max_movesize"],
+            (outside_range["nearest_plant_y"] - outside_range["y"]),
+        )
+        aimed_herbivores = pd.concat([inside_range, outside_range]).reset_index(
+            drop=True
         )
         return aimed_herbivores
 
@@ -110,28 +128,39 @@ class Herbivore:
             self.herbivore_population["target"] == True
         ]
         aimed_herbivores = self.aimed_move(aimed_herbivores)
-        self.herbivore_population = pd.concat([aimed_herbivores, aimless_herbivores])
+        self.herbivore_population = pd.concat([aimed_herbivores, aimless_herbivores]).reset_index(drop=True)
 
     def select_target(self, hungry_herbivores):
-        targetted_herbivores = hungry_herbivores.loc[hungry_herbivores['target'] == True]
-        non_targetted_herbivores = hungry_herbivores.loc[hungry_herbivores['target'] == False]
-        far_away_plants = non_targetted_herbivores.query("dist > perception")
-        close_to_plants = non_targetted_herbivores.query("dist < perception")
-        close_to_plants['target'] = True
-        close_to_plants['x_hunt_time'] = 4
-        close_to_plants['y_hunt_time'] = 4
+        targetted_herbivores = hungry_herbivores.loc[
+            hungry_herbivores["target"] == True
+        ]
+        non_targetted_herbivores = hungry_herbivores.loc[
+            hungry_herbivores["target"] == False
+        ]
+        far_away_plants = non_targetted_herbivores.query("nearest_neighbour_distance > perception_radius")
+        close_to_plants = non_targetted_herbivores.query("nearest_neighbour_distance < perception_radius")
+        close_to_plants["target"] = True
         hungry_herbivores = pd.concat(
             [targetted_herbivores, far_away_plants, close_to_plants]
         ).reset_index(drop=True)
         return hungry_herbivores
 
     def eat(self):
-        hungry_herbivores = self.herbivore_population.loc[self.herbivore_population['dist'] > self.eating_radius]
-        eating_herbivores = self.herbivore_population.loc[self.herbivore_population['dist'] < self.eating_radius]
-        #TODO Clever relationship needed
-        eating_herbivores["energy"] = eating_herbivores["energy"] + eating_herbivores["nearest_neighbour_size"]
-        eating_herbivores["nearest_plant_x"] = -100
-        eating_herbivores["nearest_plant_x"] = -100
+        hungry_herbivores = self.herbivore_population.loc[
+            self.herbivore_population["nearest_neighbour_distance"] > self.eating_radius
+        ]
+        eating_herbivores = self.herbivore_population.loc[
+            self.herbivore_population["nearest_neighbour_distance"] < self.eating_radius
+        ]
+        eating_herbivores["energy"] = (
+            eating_herbivores["energy"] + eating_herbivores["nearest_neighbour_size"]
+        )
+        eating_herbivores["nearest_plant_x"] = np.nan
+        eating_herbivores["nearest_plant_y"] = np.nan
+        eating_herbivores["nearest_neighbour_distance"] = np.nan
+        eating_herbivores["nearest_neighbour_index"] = np.nan
+        eating_herbivores["nearest_neighbour_size"] = np.nan
+        eating_herbivores["target"] = False
         hungry_herbivores = self.select_target(hungry_herbivores)
         self.herbivore_population = pd.concat(
             [hungry_herbivores, eating_herbivores]
@@ -139,17 +168,21 @@ class Herbivore:
 
     def age(self):
         self.herbivore_population["age"] = self.herbivore_population["age"] + 1
-        #TODO Clever relationship needed
-        self.herbivore_population["energy"] = self.herbivore_population["energy"] - 1
+        # TODO This will be a bug if values get to 1
+        self.herbivore_population["energy"] = (
+            self.herbivore_population["energy"]
+            - (1 - (1 / self.herbivore_population["speed"]))
+            - (1 - (1 / self.herbivore_population["perception"]))
+            + (1 - (1 / self.herbivore_population["size"]))
+        )
         self.reproduce()
         self.kill_old()
         self.starve()
 
     def kill_old(self):
-        dead_herbivores = self.herbivore_population.query("age > life_expectancy")
-        self.herbivore_population = self.herbivore_population.loc[
-            ~self.herbivore_population.index.isin(dead_herbivores.index)
-        ]
+        self.herbivore_population = self.herbivore_population.query(
+            "age < life_expectancy"
+        )
 
     def starve(self):
         self.herbivore_population = self.herbivore_population.loc[
@@ -166,10 +199,6 @@ class Herbivore:
         ]
         babies["x"] = babies["x"] + random.uniform(-15, 15)
         babies["y"] = babies["y"] + random.uniform(-15, 15)
-        babies["size"] = babies["speed"] + random.uniform(
-            -self.herbivore_properties["mutation_rate"],
-            self.herbivore_properties["mutation_rate"],
-        )
         babies["life_expectancy"] = babies["life_expectancy"] + random.uniform(
             -self.herbivore_properties["mutation_rate"],
             self.herbivore_properties["mutation_rate"],
@@ -182,31 +211,27 @@ class Herbivore:
             -self.herbivore_properties["mutation_rate"],
             self.herbivore_properties["mutation_rate"],
         )
-        babies["movesize"] = babies["movesize"] + random.uniform(
-            -self.herbivore_properties["mutation_rate"],
-            self.herbivore_properties["mutation_rate"],
-        )
         babies["size"] = babies["size"] + random.uniform(
             -self.herbivore_properties["mutation_rate"],
             self.herbivore_properties["mutation_rate"],
         )
-        babies['perception'] = babies["perception"] + random.uniform(
+        babies["perception"] = babies["perception"] + random.uniform(
             -self.herbivore_properties["mutation_rate"],
             self.herbivore_properties["mutation_rate"],
         )
-        babies["nearest_plant_x"] = -100
-        babies["nearest_plant_y"] = -100
+        babies["perception_radius"] = babies["perception"] * 20
+        babies["max_movesize"] = (
+            (np.power(babies["speed"], 3)) - (np.power(babies["size"], 2))
+        ) / self.herbivore_properties["movesize"]
+        babies["nearest_plant_x"] = np.nan
+        babies["nearest_plant_y"] = np.nan
         babies["nearest_neighbour_distance"] = np.nan
         babies["nearest_neighbour_index"] = np.nan
         babies["nearest_neighbour_size"] = np.nan
         babies["target"] = False
-        babies["x_hunt_time"] = 0
-        babies["y_hunt_time"] = 0
-        babies["energy"] = self.herbivore_properties["starting_energy"]
+        babies["energy"] = self.herbivore_properties['starting_energy']
         babies["age"] = 0
-        babies["target_x"] = -100
-        babies["target_y"] = -100
-        reproducing_individuals["energy"] = self.herbivore_properties["starting_energy"]
+        reproducing_individuals["energy"] = self.herbivore_properties['starting_energy']
         self.herbivore_population = pd.concat(
             [babies, reproducing_individuals, non_repoducing_individuals]
         ).reset_index(drop=True)

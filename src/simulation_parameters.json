@@ -1,7 +1,7 @@
 {
   "plant_properties": {
-    "starting_number": 10,
-    "replication_percentage": 50,
+    "starting_number": 500,
+    "replication_percentage": 1,
     "size": [1, 5],
     "reproduction_rate": [1, 5],
     "offspring_spread": [50, 100]
@@ -10,13 +10,13 @@
     "starting_number": 10
   },
   "herbivore_properties": {
-    "starting_number": 10,
+    "starting_number": 50,
     "starting_energy": 8,
     "mutation_rate": 0.1,
     "movesize": 2,
-    "perception": [80, 120],
-    "size": [1, 5],
-    "speed": [1, 5],
+    "perception": [2, 5],
+    "size": [2, 5],
+    "speed": [2, 5],
     "life_expectancy": [65, 75],
     "reproduction_energy": [10, 12]
   },

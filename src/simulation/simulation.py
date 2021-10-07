@@ -15,12 +15,10 @@ class Simulation:
     historic_plant_reproduction_rate = []
     historic_plant_size = []
     historic_herbivores = []
-    historic_herbivore_energy = []
-    historic_herbivores_life_expectancy = []
-    historic_herbivores_reproduction_energy = []
+    historic_herbivores_size = []
     historic_herbivores_speed = []
+    historic_herbivores_perception = []
     historic_steps = []
-
     line = plt.scatter
     fig = plt.figure
     ax = plt.subplots
@@ -47,8 +45,8 @@ class Simulation:
         self.herbivores.herbivore_population = nearest_nieghbour(
             self.plants.plant_population, self.herbivores.herbivore_population
         )
-        self.herbivores.eat()
         self.plants.die(self.herbivores.herbivore_population)
+        self.herbivores.eat()
 
     def sample(self):
         self.historic_plants.append(self.plants.plant_population.shape[0])
@@ -57,17 +55,14 @@ class Simulation:
         )
         self.historic_plant_size.append(np.mean(self.plants.plant_population["size"]))
         self.historic_herbivores.append(self.herbivores.herbivore_population.shape[0])
-        self.historic_herbivore_energy.append(
-            np.mean(self.herbivores.herbivore_population["energy"])
+        self.historic_herbivores_perception.append(
+            np.mean(self.herbivores.herbivore_population["perception"])
         )
         self.historic_herbivores_speed.append(
-            np.mean(self.herbivores.herbivore_population.speed)
+            np.mean(self.herbivores.herbivore_population["speed"])
         )
-        self.historic_herbivores_life_expectancy.append(
-            np.mean(self.herbivores.herbivore_population.life_expectancy)
-        )
-        self.historic_herbivores_reproduction_energy.append(
-            np.mean(self.herbivores.herbivore_population.reproduction_energy)
+        self.historic_herbivores_size.append(
+            np.mean(self.herbivores.herbivore_population["size"])
         )
 
     def setup_animation(self):
@@ -95,7 +90,6 @@ class Simulation:
 
         ax4 = plt.subplot(2, 2, 4)
         ax4.plot([0], [0])
-        #   ax4.plot([0], [0])
         ax4.plot([0], [0])
         ax4.plot([0], [0])
         plt.pause(0.001)
@@ -146,31 +140,34 @@ class Simulation:
             color="blue",
             s=10,
         )
-        ax3.scatter(self.plants.plant_population.x, self.plants.plant_population.y, color='green', s=5)
+        ax3.scatter(
+            self.plants.plant_population.x,
+            self.plants.plant_population.y,
+            color="green",
+            s=5,
+        )
 
         ax3.set_ylim(0, self._envsize)
         ax3.set_xlim(0, self._envsize)
         ax4.plot(
             self.historic_steps,
-            self.historic_herbivore_energy,
+            self.historic_herbivores_size,
             color="red",
-            label="energy",
+            label="Size",
         )
         ax4.plot(
             self.historic_steps,
             self.historic_herbivores_speed,
             color="blue",
-            label="speed",
+            label="Speed",
         )
-  #      ax4.plot(
-  #          self.historic_steps,
-  #          self.historic_herbivores_reproduction_energy,
-  #          color="green",
-  #          label="reproduction energy",
-  #      )
+        ax4.plot(
+            self.historic_steps,
+            self.historic_herbivores_perception,
+            color="green",
+            label="Perception",
+        )
         ax4.legend()
-        # ax4.plot(self.historic_steps, self.historic_herbivores_life_expectancy, color='black')
-
         plt.pause(0.001)
         fig.canvas.draw()
         return fig, ax1, ax2, ax3, ax4

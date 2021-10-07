@@ -80,7 +80,10 @@ class Plant:
         self.nplants = self.plant_population.shape[0]
 
     def die(self, distances):
-        eaten_plants = distances.loc[distances["dist"] < 10.0]
+        eaten_plants = distances.loc[distances["nearest_neighbour_distance"] < 10.0]
+        if eaten_plants.shape[0] > 0:
+            print(eaten_plants)
+            print("HELLLLLO")
         self.plant_population = self.plant_population.loc[
-            ~self.plant_population.index.isin(eaten_plants['nearest_neighbour_index'])
+            ~self.plant_population.index.isin(eaten_plants["nearest_neighbour_index"])
         ]

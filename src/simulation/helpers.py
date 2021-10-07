@@ -1,5 +1,4 @@
 from scipy.spatial import cKDTree
-import pandas as pd
 
 
 def nearest_nieghbour(plant, herbivore):
@@ -10,9 +9,9 @@ def nearest_nieghbour(plant, herbivore):
     plant.index = plant.index.set_names(["plants"])
     gdB_nearest = plant.iloc[idx].reset_index()
     gdB_nearest["dist"] = dist
-    herbivore['nearest_plant_x'] = gdB_nearest['x']
-    herbivore['nearest_plant_y'] = gdB_nearest['y']
-    herbivore['dist'] = gdB_nearest['dist']
-    herbivore['nearest_neighbour_index'] = gdB_nearest['plants']
-    herbivore['nearest_neighbour_size'] = gdB_nearest['size']
+    herbivore["nearest_plant_x"] = gdB_nearest["x"]
+    herbivore["nearest_plant_y"] = gdB_nearest["y"]
+    herbivore["nearest_neighbour_distance"] = gdB_nearest["dist"]
+    herbivore["nearest_neighbour_index"] = gdB_nearest["plants"]
+    herbivore["nearest_neighbour_size"] = gdB_nearest["size"]
     return herbivore
