@@ -16,11 +16,11 @@ Energy
     - decreases each step by set amount *
 
 
-Size 
+Size - Too powerful atm 
     - How big it is
     - Disadvantage - Bigger animals move much slower
     - Advantage - Bigger animals can survive for longer without starving
-
+    - Advantage - Bigger animals get food first. 
 
 Speed - 
     - How fast it is (how large a move it can make)

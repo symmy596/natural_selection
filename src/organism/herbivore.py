@@ -185,15 +185,22 @@ class Herbivore:
             self._logger.info(f" herbivore_population 1 {self.herbivore_population[['nearest_neighbour_distance', 'nearest_plant_x', 'nearest_plant_y']]}")
 
 
-
     def age(self):
         self.herbivore_population["age"] = self.herbivore_population["age"] + 1
+        #TODO Need to think about this. This is a hack because 1/<1 is a big number
+        self.herbivore_population["speed"][self.herbivore_population["speed"] < 1] = 1
+        self.herbivore_population["perception"][self.herbivore_population["perception"] < 1] = 1
+        self.herbivore_population["size"][self.herbivore_population["size"] < 1] = 1
+
         self.herbivore_population["energy"] = (
             self.herbivore_population["energy"]
             - (1 - (1 / self.herbivore_population["speed"]))
             - (1 - (1 / self.herbivore_population["perception"]))
             + (1 - (1 / self.herbivore_population["size"]))
         )
+        self._logger.info((1 - (1 / self.herbivore_population["speed"])) - (1 - (1 / self.herbivore_population["perception"])) + (1 - (1 / self.herbivore_population["size"])))
+        self._logger.info(self.herbivore_population[["energy", "speed", "perception", "size"]])
+
         self.reproduce()
         self.kill_old()
         self.starve()
@@ -212,6 +219,7 @@ class Herbivore:
         reproducing_individuals = self.herbivore_population.query(
             "energy > reproduction_energy"
         )
+        self._logger.info(reproducing_individuals[['energy', 'reproduction_energy']])
         babies = reproducing_individuals.copy()
         non_repoducing_individuals = self.herbivore_population.loc[
             ~self.herbivore_population.index.isin(reproducing_individuals.index)
@@ -238,7 +246,7 @@ class Herbivore:
             -self.herbivore_properties["mutation_rate"],
             self.herbivore_properties["mutation_rate"],
         )
-        babies["perception_radius"] = babies["perception"] * 20
+        babies["perception_radius"] = babies["perception"] * 10
         babies["max_movesize"] = (
             (np.power(babies["speed"], 3)) - (np.power(babies["size"], 2))
         ) / self.herbivore_properties["movesize"]
@@ -250,6 +258,7 @@ class Herbivore:
         babies["target"] = False
         babies["energy"] = self.herbivore_properties['starting_energy']
         babies["age"] = 0
+        self._logger.info(babies[['energy', 'reproduction_energy']])
         reproducing_individuals["energy"] = self.herbivore_properties['starting_energy']
         self.herbivore_population = pd.concat(
             [babies, reproducing_individuals, non_repoducing_individuals]
