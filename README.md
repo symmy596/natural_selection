@@ -40,3 +40,8 @@ Reproduction energy
     - Advantage - Lower values mean faster reproduction
 
 life expectancy - How long will it live for
+
+
+
+Plant properties
+
